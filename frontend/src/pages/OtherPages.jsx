@@ -1,8 +1,8 @@
-// ── HORARIO ───────────────────────────────────────────────────────
+﻿// â”€â”€ HORARIO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { clasesAPI, reservasAPI } from '../services/api';
-import { Card, Btn, Badge, Modal, Input, Select, FormRow, Spinner } from '../components/ui/index.jsx';
+import { clasesAPI, reservasAPI, pagosAPI, sociosAPI, membresiasAPI, notificacionesAPI, configAPI, qrAPI, accesosAPI } from '../services/api';
+import { Card, Btn, Badge, Modal, Input, Select, FormRow, Spinner, Table, SearchBox, Pagination, MetricCard, Tabs, StatMini, Textarea } from '../components/ui/index.jsx';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -48,10 +48,10 @@ export function Horario() {
           <Badge color="blue">Todas las salas</Badge>
           {salas.map(s=><span key={s.id} style={{ fontSize:12, padding:'3px 9px', borderRadius:20, background:s.color+'22', color:s.color, border:`1px solid ${s.color}44`, cursor:'pointer' }}>{s.nombre}</span>)}
         </div>
-        <Btn onClick={() => setSemanaOffset(o => o-1)}>← Anterior</Btn>
+        <Btn onClick={() => setSemanaOffset(o => o-1)}>â† Anterior</Btn>
         <Btn onClick={() => setSemanaOffset(0)}>Hoy</Btn>
-        <Btn onClick={() => setSemanaOffset(o => o+1)}>Siguiente →</Btn>
-        {isAdmin && <Btn variant="primary" onClick={() => setModal('nueva')}>＋ Nueva clase</Btn>}
+        <Btn onClick={() => setSemanaOffset(o => o+1)}>Siguiente â†’</Btn>
+        {isAdmin && <Btn variant="primary" onClick={() => setModal('nueva')}>ï¼‹ Nueva clase</Btn>}
       </div>
 
       {isLoading ? <div style={{display:'flex',justifyContent:'center',paddingTop:40}}><Spinner size={28}/></div> : (
@@ -82,7 +82,7 @@ export function Horario() {
                         <div style={{ fontSize:10, color: ll ? 'var(--red)' : 'var(--text3)' }}>
                           {cl.reservas}/{cl.aforo_maximo}{ll ? ' LLENO' : ''}
                         </div>
-                        {cl.yo_reservado && <div style={{ fontSize:9, color:'var(--green)', fontWeight:600, marginTop:1 }}>✓ Reservado</div>}
+                        {cl.yo_reservado && <div style={{ fontSize:9, color:'var(--green)', fontWeight:600, marginTop:1 }}>âœ“ Reservado</div>}
                       </div>
                     );
                   })}
@@ -108,8 +108,8 @@ export function Horario() {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:14 }}>
             {[
               ['Sala', clasesel.sala],
-              ['Horario', `${format(new Date(clasesel.fecha_inicio),'HH:mm')} — ${format(new Date(clasesel.fecha_fin),'HH:mm')}`],
-              ['Entrenador', clasesel.entrenador || '—'],
+              ['Horario', `${format(new Date(clasesel.fecha_inicio),'HH:mm')} â€” ${format(new Date(clasesel.fecha_fin),'HH:mm')}`],
+              ['Entrenador', clasesel.entrenador || 'â€”'],
               ['Plazas', `${clasesel.reservas}/${clasesel.aforo_maximo} ocupadas`],
             ].map(([k,v]) => (
               <div key={k} style={{ background:'var(--bg3)', borderRadius:'var(--r)', padding:'9px 11px' }}>
@@ -118,8 +118,8 @@ export function Horario() {
               </div>
             ))}
           </div>
-          {clasesel.yo_reservado && <div style={{ padding:10, background:'rgba(34,197,94,.1)', border:'1px solid rgba(34,197,94,.2)', borderRadius:'var(--r)', fontSize:13, color:'var(--green)' }}>✓ Ya tienes una plaza reservada</div>}
-          {parseInt(clasesel.reservas) >= clasesel.aforo_maximo && !clasesel.yo_reservado && <div style={{ padding:10, background:'rgba(239,68,68,.1)', border:'1px solid rgba(239,68,68,.2)', borderRadius:'var(--r)', fontSize:13, color:'var(--red)' }}>Clase llena — puedes unirte a la lista de espera</div>}
+          {clasesel.yo_reservado && <div style={{ padding:10, background:'rgba(34,197,94,.1)', border:'1px solid rgba(34,197,94,.2)', borderRadius:'var(--r)', fontSize:13, color:'var(--green)' }}>âœ“ Ya tienes una plaza reservada</div>}
+          {parseInt(clasesel.reservas) >= clasesel.aforo_maximo && !clasesel.yo_reservado && <div style={{ padding:10, background:'rgba(239,68,68,.1)', border:'1px solid rgba(239,68,68,.2)', borderRadius:'var(--r)', fontSize:13, color:'var(--red)' }}>Clase llena â€” puedes unirte a la lista de espera</div>}
         </Modal>
       )}
 
@@ -134,7 +134,7 @@ export function Horario() {
 function ModalNuevaClase({ salas, actividades, onClose, onSave, loading }) {
   const [form, setForm] = useState({ sala_id:'', tipo_actividad_id:'', fecha_inicio:'', fecha_fin:'', aforo_maximo:8, recurrente:false, recurrencia_dias:[], recurrencia_fin:'' });
   const set=(k,v)=>setForm(f=>({...f,[k]:v}));
-  const diasSemana = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const diasSemana = ['Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b','Dom'];
 
   const handleSave = () => {
     if (!form.sala_id || !form.tipo_actividad_id || !form.fecha_inicio) return toast.error('Sala, actividad y fecha son obligatorios');
@@ -145,14 +145,14 @@ function ModalNuevaClase({ salas, actividades, onClose, onSave, loading }) {
 
   return (
     <Modal open onClose={onClose} title="Nueva clase" size="md"
-      footer={<><Btn onClick={onClose}>Cancelar</Btn><Btn variant="primary" onClick={handleSave} loading={loading}>✓ Crear clase</Btn></>}>
+      footer={<><Btn onClick={onClose}>Cancelar</Btn><Btn variant="primary" onClick={handleSave} loading={loading}>âœ“ Crear clase</Btn></>}>
       <Select label="Actividad *" value={form.tipo_actividad_id} onChange={v=>set('tipo_actividad_id',v)} placeholder="Selecciona..." options={actividades.map(a=>({value:String(a.id),label:a.nombre}))} />
       <Select label="Sala *" value={form.sala_id} onChange={v=>set('sala_id',v)} placeholder="Selecciona..." options={salas.map(s=>({value:String(s.id),label:s.nombre}))} />
       <FormRow>
         <Input label="Inicio *" type="datetime-local" value={form.fecha_inicio} onChange={v=>set('fecha_inicio',v)} />
         <Input label="Fin" type="datetime-local" value={form.fecha_fin} onChange={v=>set('fecha_fin',v)} />
       </FormRow>
-      <Input label="Aforo máximo" type="number" value={form.aforo_maximo} onChange={v=>set('aforo_maximo',v)} min={1} />
+      <Input label="Aforo mÃ¡ximo" type="number" value={form.aforo_maximo} onChange={v=>set('aforo_maximo',v)} min={1} />
       <div style={{ marginBottom:14, display:'flex', alignItems:'center', gap:10 }}>
         <input type="checkbox" id="rec" checked={form.recurrente} onChange={e=>set('recurrente',e.target.checked)} style={{ width:16, height:16, accentColor:'var(--accent)', cursor:'pointer' }} />
         <label htmlFor="rec" style={{ cursor:'pointer', fontSize:13 }}>Clase recurrente semanal</label>
@@ -160,7 +160,7 @@ function ModalNuevaClase({ salas, actividades, onClose, onSave, loading }) {
       {form.recurrente && (
         <>
           <div style={{ marginBottom:14 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:8 }}>Días de la semana</div>
+            <div style={{ fontSize:11, fontWeight:600, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:8 }}>DÃ­as de la semana</div>
             <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
               {diasSemana.map((d,i) => {
                 const dow = i === 6 ? 0 : i + 1;
@@ -179,7 +179,7 @@ function ModalNuevaClase({ salas, actividades, onClose, onSave, loading }) {
   );
 }
 
-// ── ACCESO QR ─────────────────────────────────────────────────────
+// â”€â”€ ACCESO QR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function AccesoQR() {
   const qc = useQueryClient();
   const [scanning, setScanning] = useState(false);
@@ -195,7 +195,7 @@ export function AccesoQR() {
   const simularScan = () => {
     setScanning(true);
     setTimeout(() => {
-      setLastResult({ ok: true, socio: 'María García (simulación)', mensaje: 'Acceso permitido' });
+      setLastResult({ ok: true, socio: 'MarÃ­a GarcÃ­a (simulaciÃ³n)', mensaje: 'Acceso permitido' });
       setScanning(false);
     }, 1500);
   };
@@ -219,7 +219,7 @@ export function AccesoQR() {
         </div>
         <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--rl)', padding:12, textAlign:'center' }}>
           <div style={{ fontSize:22, fontWeight:600, color:'var(--blue)' }}>{datosDia?.stats?.socios_unicos || 0}</div>
-          <div style={{ fontSize:11, color:'var(--text2)', marginTop:2 }}>Socios únicos</div>
+          <div style={{ fontSize:11, color:'var(--text2)', marginTop:2 }}>Socios Ãºnicos</div>
         </div>
       </div>
 
@@ -237,14 +237,14 @@ export function AccesoQR() {
             </svg>
           </div>
           <div style={{ fontSize:13, fontWeight:500, marginBottom:4 }}>Terminal Entrada</div>
-          <Badge color="green">● Activo</Badge>
+          <Badge color="green">â— Activo</Badge>
         </Card>
 
-        {/* Escáner */}
+        {/* EscÃ¡ner */}
         <Card>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'.08em' }}>Escáner de acceso</div>
-            <Badge color="green">● En vivo</Badge>
+            <div style={{ fontSize:11, fontWeight:600, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'.08em' }}>EscÃ¡ner de acceso</div>
+            <Badge color="green">â— En vivo</Badge>
           </div>
 
           <div
@@ -260,32 +260,32 @@ export function AccesoQR() {
               <><Spinner size={28} /><div style={{ fontSize:13, color:'var(--accent)' }}>Verificando QR...</div></>
             ) : lastResult ? (
               <>
-                <div style={{ fontSize:34, color: lastResult.ok ? 'var(--green)' : 'var(--red)' }}>{lastResult.ok ? '✓' : '✗'}</div>
+                <div style={{ fontSize:34, color: lastResult.ok ? 'var(--green)' : 'var(--red)' }}>{lastResult.ok ? 'âœ“' : 'âœ—'}</div>
                 <div style={{ fontSize:14, fontWeight:600, color: lastResult.ok ? 'var(--green)' : 'var(--red)' }}>{lastResult.socio}</div>
                 <div style={{ fontSize:12, color:'var(--text2)' }}>{lastResult.mensaje}</div>
               </>
             ) : (
               <>
-                <div style={{ fontSize:36, color:'var(--text3)' }}>⬛</div>
+                <div style={{ fontSize:36, color:'var(--text3)' }}>â¬›</div>
                 <div style={{ fontSize:13, color:'var(--text2)' }}>Pulsa para simular escaneo</div>
-                <div style={{ fontSize:11, color:'var(--text3)' }}>El hardware iMC² envía QRs a POST /api/accesos/validar</div>
+                <div style={{ fontSize:11, color:'var(--text3)' }}>El hardware iMCÂ² envÃ­a QRs a POST /api/accesos/validar</div>
               </>
             )}
           </div>
 
           {/* Log de accesos */}
-          <div style={{ fontSize:11, fontWeight:600, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:8 }}>Últimas entradas</div>
+          <div style={{ fontSize:11, fontWeight:600, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:8 }}>Ãšltimas entradas</div>
           {todosAccesos.length === 0 ? <div style={{ color:'var(--text3)', fontSize:13, padding:'10px 0' }}>Sin accesos hoy</div> :
             todosAccesos.slice(0,8).map((a,i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
                 <div style={{ width:8, height:8, borderRadius:'50%', background: a.resultado==='ok'?'var(--green)':a.resultado==='sin_creditos'?'var(--yellow)':'var(--red)', flexShrink:0 }} />
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:13, fontWeight:500 }}>{a.socio_nombre || 'Desconocido'}</div>
-                  <div style={{ fontSize:11, color:'var(--text2)' }}>{a.credito_tipo || '—'}</div>
+                  <div style={{ fontSize:11, color:'var(--text2)' }}>{a.credito_tipo || 'â€”'}</div>
                 </div>
                 <div style={{ fontSize:11, color:'var(--text3)' }}>{a.timestamp ? format(new Date(a.timestamp),'HH:mm') : ''}</div>
                 <Badge color={a.resultado==='ok'?'green':a.resultado==='sin_creditos'?'yellow':'red'}>
-                  {a.resultado==='ok'?'✓ OK':a.resultado==='sin_creditos'?'Sin créd.':'Denegado'}
+                  {a.resultado==='ok'?'âœ“ OK':a.resultado==='sin_creditos'?'Sin crÃ©d.':'Denegado'}
                 </Badge>
               </div>
             ))
@@ -296,16 +296,14 @@ export function AccesoQR() {
   );
 }
 
-// ── PAGOS ─────────────────────────────────────────────────────────
+// â”€â”€ PAGOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function Pagos() {
   const qc = useQueryClient();
   const [buscar, setBuscar] = useState('');
   const [estado, setEstado] = useState('');
   const [pagina, setPagina] = useState(1);
   const [modal, setModal] = useState(null);
-  const { SearchBox, Pagination, MetricCard } = require('../components/ui/index.jsx');
-  const { pagosAPI, sociosAPI, membresiasAPI } = require('../services/api');
-
+    
   const { data, isLoading } = useQuery({
     queryKey: ['pagos', buscar, estado, pagina],
     queryFn: () => pagosAPI.listar({ pagina, limite: 20 }),
@@ -331,20 +329,20 @@ export function Pagos() {
   const columnas = [
     { key:'socio_nombre', label:'Socio', width:'20%' },
     { key:'concepto', label:'Concepto', width:'28%', nowrap:false, render:v=><span style={{fontSize:12,color:'var(--text2)'}}>{v}</span> },
-    { key:'importe_total', label:'Total', width:'9%', render:v=><span style={{fontWeight:700,color:'var(--accent)'}}>{parseFloat(v||0).toFixed(2)}€</span> },
-    { key:'metodo_pago', label:'Método', width:'10%', render:v=><Badge color="gray">{v||'—'}</Badge> },
-    { key:'estado', label:'Estado', width:'11%', render:v=><Badge color={v==='pagado'?'green':v==='pendiente'?'yellow':'red'}>{v==='pagado'?'✓ Cobrado':v==='pendiente'?'Pendiente':'Impago'}</Badge> },
-    { key:'fecha_emision', label:'Fecha', width:'10%', render:v=>v?new Date(v).toLocaleDateString('es-ES'):'—' },
-    { key:'numero_factura', label:'Factura', width:'12%', render:v=><span style={{fontFamily:'monospace',fontSize:11,color:'var(--text3)'}}>{v||'—'}</span> },
+    { key:'importe_total', label:'Total', width:'9%', render:v=><span style={{fontWeight:700,color:'var(--accent)'}}>{parseFloat(v||0).toFixed(2)}â‚¬</span> },
+    { key:'metodo_pago', label:'MÃ©todo', width:'10%', render:v=><Badge color="gray">{v||'â€”'}</Badge> },
+    { key:'estado', label:'Estado', width:'11%', render:v=><Badge color={v==='pagado'?'green':v==='pendiente'?'yellow':'red'}>{v==='pagado'?'âœ“ Cobrado':v==='pendiente'?'Pendiente':'Impago'}</Badge> },
+    { key:'fecha_emision', label:'Fecha', width:'10%', render:v=>v?new Date(v).toLocaleDateString('es-ES'):'â€”' },
+    { key:'numero_factura', label:'Factura', width:'12%', render:v=><span style={{fontFamily:'monospace',fontSize:11,color:'var(--text3)'}}>{v||'â€”'}</span> },
   ];
 
   return (
     <div>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:16 }}>
-        <MetricCard icon="✅" label="Cobrado mes" value={`${parseFloat(resumen?.cobrado_mes||0).toLocaleString('es-ES')}€`} accentColor="var(--green)" />
-        <MetricCard icon="⏳" label="Pendiente" value={`${parseFloat(resumen?.pendiente||0).toFixed(0)}€`} accentColor="var(--yellow)" />
-        <MetricCard icon="❌" label="Impagos" value={resumen?.facturas_pendientes||0} accentColor="var(--red)" />
-        <MetricCard icon="🧾" label="Facturas mes" value={resumen?.facturas_mes||0} accentColor="var(--blue)" />
+        <MetricCard icon="âœ…" label="Cobrado mes" value={`${parseFloat(resumen?.cobrado_mes||0).toLocaleString('es-ES')}â‚¬`} accentColor="var(--green)" />
+        <MetricCard icon="â³" label="Pendiente" value={`${parseFloat(resumen?.pendiente||0).toFixed(0)}â‚¬`} accentColor="var(--yellow)" />
+        <MetricCard icon="âŒ" label="Impagos" value={resumen?.facturas_pendientes||0} accentColor="var(--red)" />
+        <MetricCard icon="ðŸ§¾" label="Facturas mes" value={resumen?.facturas_mes||0} accentColor="var(--blue)" />
       </div>
       <div style={{ display:'flex', gap:10, marginBottom:14, alignItems:'center' }}>
         <SearchBox value={buscar} onChange={v=>{setBuscar(v);setPagina(1);}} placeholder="Buscar socio, concepto, factura..." />
@@ -355,8 +353,8 @@ export function Pagos() {
           <option value="pendiente">Pendientes</option>
           <option value="impago">Impagos</option>
         </select>
-        <Btn onClick={()=>toast('Exportando CSV...')}>↓ Exportar CSV</Btn>
-        <Btn variant="primary" onClick={()=>setModal('nuevo')}>＋ Registrar pago</Btn>
+        <Btn onClick={()=>toast('Exportando CSV...')}>â†“ Exportar CSV</Btn>
+        <Btn variant="primary" onClick={()=>setModal('nuevo')}>ï¼‹ Registrar pago</Btn>
       </div>
       <Table columns={columnas} rows={pagos} loading={isLoading} />
       <Pagination page={pagina} total={data?.total||0} limit={20} onChange={setPagina} />
@@ -376,28 +374,28 @@ function ModalNuevoPago({ onClose, onSave, loading, socios, membs }) {
 
   return (
     <Modal open onClose={onClose} title="Registrar pago" size="md"
-      footer={<><Btn onClick={onClose}>Cancelar</Btn><Btn variant="primary" onClick={()=>{if(!form.usuario_id||!form.concepto||!form.importe_base)return toast.error('Rellena los campos obligatorios');onSave({...form,importe_base:parseFloat(form.importe_base)});}} loading={loading}>✓ Registrar</Btn></>}>
+      footer={<><Btn onClick={onClose}>Cancelar</Btn><Btn variant="primary" onClick={()=>{if(!form.usuario_id||!form.concepto||!form.importe_base)return toast.error('Rellena los campos obligatorios');onSave({...form,importe_base:parseFloat(form.importe_base)});}} loading={loading}>âœ“ Registrar</Btn></>}>
       <Select label="Socio *" value={form.usuario_id} onChange={v=>set('usuario_id',v)} placeholder="Selecciona socio..." options={socios.map(s=>({value:s.id,label:`${s.nombre} ${s.apellidos||''}`}))} />
-      <Select label="Concepto *" value={form.concepto} onChange={v=>{set('concepto',v);const m=membs.find(mm=>mm.nombre===v);if(m)set('importe_base',String(m.precio));}} placeholder="Selecciona o escribe..." options={membs.map(m=>({value:m.nombre,label:`${m.nombre} — ${m.precio}€`}))} />
-      <Input label="Importe base (€) *" type="number" value={form.importe_base} onChange={v=>set('importe_base',v)} step="0.01" placeholder="0.00" />
+      <Select label="Concepto *" value={form.concepto} onChange={v=>{set('concepto',v);const m=membs.find(mm=>mm.nombre===v);if(m)set('importe_base',String(m.precio));}} placeholder="Selecciona o escribe..." options={membs.map(m=>({value:m.nombre,label:`${m.nombre} â€” ${m.precio}â‚¬`}))} />
+      <Input label="Importe base (â‚¬) *" type="number" value={form.importe_base} onChange={v=>set('importe_base',v)} step="0.01" placeholder="0.00" />
       <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'var(--r)', padding:12, marginBottom:14 }}>
         <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5, fontSize:13 }}>
-          <span style={{ color:'var(--text2)' }}>Base</span><span>{parseFloat(form.importe_base||0).toFixed(2)} €</span>
+          <span style={{ color:'var(--text2)' }}>Base</span><span>{parseFloat(form.importe_base||0).toFixed(2)} â‚¬</span>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5, fontSize:13 }}>
-          <span style={{ color:'var(--text2)' }}>IVA (21%)</span><span>{iva.toFixed(2)} €</span>
+          <span style={{ color:'var(--text2)' }}>IVA (21%)</span><span>{iva.toFixed(2)} â‚¬</span>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', borderTop:'1px solid var(--border)', paddingTop:8, fontWeight:600 }}>
-          <span>Total</span><span style={{ color:'var(--accent)' }}>{total.toFixed(2)} €</span>
+          <span>Total</span><span style={{ color:'var(--accent)' }}>{total.toFixed(2)} â‚¬</span>
         </div>
       </div>
-      <Select label="Método de pago" value={form.metodo_pago} onChange={v=>set('metodo_pago',v)} options={[{value:'efectivo',label:'Efectivo'},{value:'tarjeta',label:'Tarjeta/Stripe'},{value:'transferencia',label:'Transferencia'},{value:'domiciliacion',label:'Domiciliación'}]} />
+      <Select label="MÃ©todo de pago" value={form.metodo_pago} onChange={v=>set('metodo_pago',v)} options={[{value:'efectivo',label:'Efectivo'},{value:'tarjeta',label:'Tarjeta/Stripe'},{value:'transferencia',label:'Transferencia'},{value:'domiciliacion',label:'DomiciliaciÃ³n'}]} />
       <Textarea label="Notas" value={form.notas} onChange={v=>set('notas',v)} rows={2} />
     </Modal>
   );
 }
 
-// ── NOTIFICACIONES ────────────────────────────────────────────────
+// â”€â”€ NOTIFICACIONES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function Notificaciones() {
   const qc = useQueryClient();
   const [canal, setCanal] = useState('push');
@@ -408,13 +406,13 @@ export function Notificaciones() {
 
   const enviarMutation = useMutation({
     mutationFn: async(data)=>{const m=await import('../services/api');return m.notificacionesAPI.enviar(data);},
-    onSuccess: () => { qc.invalidateQueries(['notificaciones']); setForm({titulo:'',mensaje:'',destinatarios_tipo:'todos'}); toast.success('Notificación enviada'); },
+    onSuccess: () => { qc.invalidateQueries(['notificaciones']); setForm({titulo:'',mensaje:'',destinatarios_tipo:'todos'}); toast.success('NotificaciÃ³n enviada'); },
     onError: (e) => toast.error(e.response?.data?.error || 'Error'),
   });
 
   return (
     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-      <Card title="Nueva campaña">
+      <Card title="Nueva campaÃ±a">
         <Select label="Destinatarios" value={form.destinatarios_tipo} onChange={v=>set('destinatarios_tipo',v)}
           options={[{value:'todos',label:'Todos los socios'},{value:'activos',label:'Solo activos'},{value:'clases',label:'Plan Clases Grupales'},{value:'gym',label:'Plan GYM'},{value:'deuda',label:'Con deuda'}]} />
         <div style={{ marginBottom:14 }}>
@@ -422,21 +420,21 @@ export function Notificaciones() {
           <div style={{ display:'flex', gap:8 }}>
             {['push','email','sms'].map(c => (
               <button key={c} onClick={()=>setCanal(c)} style={{ flex:1, padding:'7px 0', borderRadius:'var(--r)', border:'1px solid var(--border)', background: canal===c ? 'var(--accent)' : 'transparent', color: canal===c ? '#fff' : 'var(--text2)', cursor:'pointer', fontFamily:'inherit', fontSize:12, fontWeight:500 }}>
-                {c==='push'?'🔔 Push':c==='email'?'📧 Email':'💬 SMS'}
+                {c==='push'?'ðŸ”” Push':c==='email'?'ðŸ“§ Email':'ðŸ’¬ SMS'}
               </button>
             ))}
           </div>
         </div>
-        <Input label="Título *" value={form.titulo} onChange={v=>set('titulo',v)} placeholder="Asunto del mensaje..." />
-        <Textarea label="Mensaje *" value={form.mensaje} onChange={v=>set('mensaje',v)} placeholder="Escribe el mensaje aquí..." rows={4} />
+        <Input label="TÃ­tulo *" value={form.titulo} onChange={v=>set('titulo',v)} placeholder="Asunto del mensaje..." />
+        <Textarea label="Mensaje *" value={form.mensaje} onChange={v=>set('mensaje',v)} placeholder="Escribe el mensaje aquÃ­..." rows={4} />
         <Btn variant="primary" style={{ width:'100%' }} loading={enviarMutation.isPending}
-          onClick={() => { if(!form.titulo||!form.mensaje)return toast.error('Título y mensaje son obligatorios'); enviarMutation.mutate({...form, tipo:canal}); }}>
-          📤 Enviar ahora
+          onClick={() => { if(!form.titulo||!form.mensaje)return toast.error('TÃ­tulo y mensaje son obligatorios'); enviarMutation.mutate({...form, tipo:canal}); }}>
+          ðŸ“¤ Enviar ahora
         </Btn>
       </Card>
 
-      <Card title="Historial de envíos">
-        {hist.length === 0 ? <div style={{ color:'var(--text3)', textAlign:'center', padding:20 }}>Sin envíos realizados</div> :
+      <Card title="Historial de envÃ­os">
+        {hist.length === 0 ? <div style={{ color:'var(--text3)', textAlign:'center', padding:20 }}>Sin envÃ­os realizados</div> :
           hist.slice(0,8).map((n,i) => (
             <div key={i} style={{ background:'var(--bg3)', borderRadius:'var(--r)', padding:12, marginBottom:8 }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
@@ -444,12 +442,12 @@ export function Notificaciones() {
                 <Badge color="blue" style={{ marginLeft:8, flexShrink:0 }}>{n.tipo}</Badge>
               </div>
               <div style={{ fontSize:11, color:'var(--text3)', marginBottom:5 }}>
-                {n.fecha_envio ? format(new Date(n.fecha_envio),'dd/MM/yyyy HH:mm') : 'Programada'} · {n.destinatarios_tipo}
+                {n.fecha_envio ? format(new Date(n.fecha_envio),'dd/MM/yyyy HH:mm') : 'Programada'} Â· {n.destinatarios_tipo}
               </div>
               {n.total_enviados > 0 && (
                 <div style={{ display:'flex', gap:12 }}>
-                  <span style={{ fontSize:11, color:'var(--text2)' }}>↑ {n.total_enviados} enviados</span>
-                  {n.total_abiertos > 0 && <span style={{ fontSize:11, color:'var(--green)' }}>✓ {n.total_abiertos} ({Math.round(n.total_abiertos/n.total_enviados*100)}%)</span>}
+                  <span style={{ fontSize:11, color:'var(--text2)' }}>â†‘ {n.total_enviados} enviados</span>
+                  {n.total_abiertos > 0 && <span style={{ fontSize:11, color:'var(--green)' }}>âœ“ {n.total_abiertos} ({Math.round(n.total_abiertos/n.total_enviados*100)}%)</span>}
                 </div>
               )}
             </div>
@@ -460,7 +458,7 @@ export function Notificaciones() {
   );
 }
 
-// ── CONFIGURACIÓN ─────────────────────────────────────────────────
+// â”€â”€ CONFIGURACIÃ“N â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function Configuracion() {
   const qc = useQueryClient();
   const { data: config, isLoading } = useQuery({
@@ -477,7 +475,7 @@ export function Configuracion() {
 
   const guardarMutation = useMutation({
     mutationFn: async(data) => { const m = await import('../services/api'); return m.configAPI.actualizar(data); },
-    onSuccess: () => { qc.invalidateQueries(['config']); toast.success('Configuración guardada'); },
+    onSuccess: () => { qc.invalidateQueries(['config']); toast.success('ConfiguraciÃ³n guardada'); },
     onError: (e) => toast.error(e.response?.data?.error || 'Error'),
   });
 
@@ -489,7 +487,7 @@ export function Configuracion() {
 
   const imc2M = useMutation({
     mutationFn: async(data) => { const m = await import('../services/api'); return m.configAPI.imc2(data); },
-    onSuccess: () => toast.success('iMC² guardado'),
+    onSuccess: () => toast.success('iMCÂ² guardado'),
     onError: (e) => toast.error(e.response?.data?.error || 'Error'),
   });
 
@@ -497,31 +495,31 @@ export function Configuracion() {
 
   return (
     <div>
-      <Tabs tabs={[{id:'negocio',label:'Negocio'},{id:'integraciones',label:'iMC² + Stripe'},{id:'horario',label:'Horario apertura'},{id:'salas',label:'Salas y actividades'}]} active={tab} onChange={setTab} />
+      <Tabs tabs={[{id:'negocio',label:'Negocio'},{id:'integraciones',label:'iMCÂ² + Stripe'},{id:'horario',label:'Horario apertura'},{id:'salas',label:'Salas y actividades'}]} active={tab} onChange={setTab} />
 
       {tab === 'negocio' && (
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-          <Card title="Información del negocio">
+          <Card title="InformaciÃ³n del negocio">
             <Input label="Nombre empresa" value={form.nombre||''} onChange={v=>set('nombre',v)} />
             <Input label="Nombre legal" value={form.nombre_legal||''} onChange={v=>set('nombre_legal',v)} />
-            <Input label="Descripción" value={form.descripcion||''} onChange={v=>set('descripcion',v)} />
+            <Input label="DescripciÃ³n" value={form.descripcion||''} onChange={v=>set('descripcion',v)} />
             <FormRow>
-              <Input label="Dirección" value={form.calle||''} onChange={v=>set('calle',v)} />
-              <Input label="Código postal" value={form.codigo_postal||''} onChange={v=>set('codigo_postal',v)} />
+              <Input label="DirecciÃ³n" value={form.calle||''} onChange={v=>set('calle',v)} />
+              <Input label="CÃ³digo postal" value={form.codigo_postal||''} onChange={v=>set('codigo_postal',v)} />
             </FormRow>
             <FormRow>
-              <Input label="Teléfono" value={form.telefono||''} onChange={v=>set('telefono',v)} />
+              <Input label="TelÃ©fono" value={form.telefono||''} onChange={v=>set('telefono',v)} />
               <Input label="IVA (%)" type="number" value={form.iva_defecto||21} onChange={v=>set('iva_defecto',parseFloat(v))} />
             </FormRow>
             <Input label="Email" type="email" value={form.email||''} onChange={v=>set('email',v)} />
-            <Btn variant="primary" style={{ width:'100%' }} loading={guardarMutation.isPending} onClick={()=>guardarMutation.mutate(form)}>💾 Guardar cambios</Btn>
+            <Btn variant="primary" style={{ width:'100%' }} loading={guardarMutation.isPending} onClick={()=>guardarMutation.mutate(form)}>ðŸ’¾ Guardar cambios</Btn>
           </Card>
           <Card title="Datos bancarios">
             <Input label="Titular cuenta" value={form.titular_cuenta||''} onChange={v=>set('titular_cuenta',v)} readOnly />
             <Input label="IBAN" value={form.iban||''} onChange={v=>set('iban',v)} readOnly />
             <Input label="BIC" value={form.bic||''} onChange={v=>set('bic',v)} readOnly />
             <div style={{ background:'rgba(245,158,11,.1)', border:'1px solid rgba(245,158,11,.2)', borderRadius:'var(--r)', padding:12, fontSize:12, color:'var(--yellow)' }}>
-              Los datos bancarios se usan para domiciliaciones SEPA. Modifícalos con cuidado.
+              Los datos bancarios se usan para domiciliaciones SEPA. ModifÃ­calos con cuidado.
             </div>
           </Card>
         </div>
@@ -529,20 +527,20 @@ export function Configuracion() {
 
       {tab === 'integraciones' && (
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-          <Card title="iMC² TSimplifica (Control de acceso)">
+          <Card title="iMCÂ² TSimplifica (Control de acceso)">
             <div style={{ background:'rgba(34,197,94,.08)', border:'1px solid rgba(34,197,94,.2)', borderRadius:'var(--r)', padding:10, marginBottom:12, fontSize:12, color:'var(--green)' }}>
-              ● Terminal "Entrada" — {config?.negocio?.imc2_api_key ? 'API Key configurada' : 'Sin configurar'}
+              â— Terminal "Entrada" â€” {config?.negocio?.imc2_api_key ? 'API Key configurada' : 'Sin configurar'}
             </div>
-            <Input label="API Key iMC²" type="password" value={form.imc2_api_key||''} onChange={v=>set('imc2_api_key',v)} placeholder="Tu API key de iMC²..." />
+            <Input label="API Key iMCÂ²" type="password" value={form.imc2_api_key||''} onChange={v=>set('imc2_api_key',v)} placeholder="Tu API key de iMCÂ²..." />
             <Input label="URL Base API" value={form.imc2_base_url||'https://api.imc2simplifica.com'} onChange={v=>set('imc2_base_url',v)} />
             <Input label="Device ID terminal" value={form.imc2_device_id||''} onChange={v=>set('imc2_device_id',v)} placeholder="ID del terminal de entrada..." />
-            <Btn variant="primary" style={{ width:'100%' }} loading={imc2M.isPending} onClick={()=>imc2M.mutate({imc2_api_key:form.imc2_api_key,imc2_base_url:form.imc2_base_url,imc2_device_id:form.imc2_device_id})}>Guardar integración iMC²</Btn>
+            <Btn variant="primary" style={{ width:'100%' }} loading={imc2M.isPending} onClick={()=>imc2M.mutate({imc2_api_key:form.imc2_api_key,imc2_base_url:form.imc2_base_url,imc2_device_id:form.imc2_device_id})}>Guardar integraciÃ³n iMCÂ²</Btn>
           </Card>
           <Card title="Stripe (Pagos online)">
             <Input label="Stripe Secret Key" type="password" value={form.stripe_secret_key||''} onChange={v=>set('stripe_secret_key',v)} placeholder="sk_live_..." />
             <Input label="Stripe Publishable Key" value={form.stripe_publishable_key||''} onChange={v=>set('stripe_publishable_key',v)} placeholder="pk_live_..." />
             <Input label="Stripe Webhook Secret" type="password" value={form.stripe_webhook_secret||''} onChange={v=>set('stripe_webhook_secret',v)} placeholder="whsec_..." />
-            <Btn variant="primary" style={{ width:'100%' }} loading={stripeM.isPending} onClick={()=>stripeM.mutate({stripe_secret_key:form.stripe_secret_key,stripe_publishable_key:form.stripe_publishable_key,stripe_webhook_secret:form.stripe_webhook_secret})}>Guardar configuración Stripe</Btn>
+            <Btn variant="primary" style={{ width:'100%' }} loading={stripeM.isPending} onClick={()=>stripeM.mutate({stripe_secret_key:form.stripe_secret_key,stripe_publishable_key:form.stripe_publishable_key,stripe_webhook_secret:form.stripe_webhook_secret})}>Guardar configuraciÃ³n Stripe</Btn>
           </Card>
         </div>
       )}
@@ -550,14 +548,14 @@ export function Configuracion() {
       {tab === 'horario' && (
         <Card title="Horario de apertura">
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:8 }}>
-            {['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map((d,i) => (
+            {['Lunes','Martes','MiÃ©rcoles','Jueves','Viernes','SÃ¡bado','Domingo'].map((d,i) => (
               <div key={i} style={{ background:'var(--bg3)', borderRadius:'var(--r)', padding:'10px 8px', textAlign:'center' }}>
                 <div style={{ fontSize:11, color:'var(--text3)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.06em' }}>{d.slice(0,3)}</div>
                 <Badge color="green">24h</Badge>
               </div>
             ))}
           </div>
-          <div style={{ marginTop:12, fontSize:12, color:'var(--text3)' }}>FLY NC está abierto 24h todos los días gracias al sistema iMC².</div>
+          <div style={{ marginTop:12, fontSize:12, color:'var(--text3)' }}>FLY NC estÃ¡ abierto 24h todos los dÃ­as gracias al sistema iMCÂ².</div>
         </Card>
       )}
 
@@ -569,7 +567,7 @@ export function Configuracion() {
                 <div style={{ width:10, height:10, borderRadius:'50%', background:s.color, flexShrink:0 }} />
                 <div style={{ flex:1, fontSize:13 }}>{s.nombre}</div>
                 <span style={{ fontSize:12, color:'var(--text3)' }}>aforo: {s.aforo_maximo}</span>
-                <Btn size="sm" onClick={()=>toast('Edición próximamente')}>✏️</Btn>
+                <Btn size="sm" onClick={()=>toast('EdiciÃ³n prÃ³ximamente')}>âœï¸</Btn>
               </div>
             ))}
           </Card>
@@ -589,7 +587,7 @@ export function Configuracion() {
   );
 }
 
-// ── MI QR (vista socio) ───────────────────────────────────────────
+// â”€â”€ MI QR (vista socio) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function MiQR() {
   const { user } = useAuth();
   const [qrData, setQrData] = useState(null);
@@ -627,8 +625,8 @@ export function MiQR() {
     <div style={{ maxWidth:380, margin:'0 auto', textAlign:'center' }}>
       <Card>
         <div style={{ marginBottom:16 }}>
-          <div style={{ fontSize:18, fontWeight:600, marginBottom:4 }}>Tu código QR de acceso</div>
-          <div style={{ fontSize:13, color:'var(--text2)' }}>Muéstralo en la entrada del gimnasio</div>
+          <div style={{ fontSize:18, fontWeight:600, marginBottom:4 }}>Tu cÃ³digo QR de acceso</div>
+          <div style={{ fontSize:13, color:'var(--text2)' }}>MuÃ©stralo en la entrada del gimnasio</div>
         </div>
 
         <div style={{ width:240, height:240, background:'white', borderRadius:'var(--rl)', margin:'0 auto 16px', display:'flex', alignItems:'center', justifyContent:'center', padding:12 }}>
@@ -641,10 +639,10 @@ export function MiQR() {
         <div style={{ fontSize:14, fontWeight:600, marginBottom:4 }}>{user?.nombre} {user?.apellidos}</div>
         <div style={{ fontSize:12, color:'var(--text3)', marginBottom:12, fontFamily:'monospace' }}>ID: {user?.id?.slice(0,8)}...</div>
 
-        {/* Barra de expiración */}
+        {/* Barra de expiraciÃ³n */}
         <div style={{ marginBottom:12 }}>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-            <span style={{ fontSize:11, color:'var(--text3)' }}>Válido por</span>
+            <span style={{ fontSize:11, color:'var(--text3)' }}>VÃ¡lido por</span>
             <span style={{ fontSize:11, color: segundos < 20 ? 'var(--red)' : 'var(--green)', fontWeight:600 }}>{segundos}s</span>
           </div>
           <div style={{ height:4, background:'var(--bg3)', borderRadius:2, overflow:'hidden' }}>
@@ -652,14 +650,14 @@ export function MiQR() {
           </div>
         </div>
 
-        <Btn variant="primary" style={{ width:'100%' }} onClick={generarQR} loading={loading}>↻ Generar nuevo QR</Btn>
-        <div style={{ marginTop:12, fontSize:11, color:'var(--text3)' }}>El QR se renueva automáticamente cada 90 segundos por seguridad</div>
+        <Btn variant="primary" style={{ width:'100%' }} onClick={generarQR} loading={loading}>â†» Generar nuevo QR</Btn>
+        <div style={{ marginTop:12, fontSize:11, color:'var(--text3)' }}>El QR se renueva automÃ¡ticamente cada 90 segundos por seguridad</div>
       </Card>
     </div>
   );
 }
 
-// ── MIS RESERVAS (vista socio) ────────────────────────────────────
+// â”€â”€ MIS RESERVAS (vista socio) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function MisReservas() {
   const qc = useQueryClient();
   const { data: reservas = [], isLoading } = useQuery({
@@ -678,8 +676,8 @@ export function MisReservas() {
       {isLoading ? <div style={{display:'flex',justifyContent:'center',paddingTop:40}}><Spinner size={28}/></div> :
         reservas.length === 0 ? (
           <div style={{ textAlign:'center', padding:60, color:'var(--text3)' }}>
-            <div style={{ fontSize:40, marginBottom:12 }}>📋</div>
-            <div style={{ fontSize:16, marginBottom:6 }}>No tienes reservas próximas</div>
+            <div style={{ fontSize:40, marginBottom:12 }}>ðŸ“‹</div>
+            <div style={{ fontSize:16, marginBottom:6 }}>No tienes reservas prÃ³ximas</div>
             <div style={{ fontSize:13 }}>Ve al horario para reservar una clase</div>
           </div>
         ) : reservas.map(r => (
@@ -687,12 +685,12 @@ export function MisReservas() {
             <div style={{ flex:1 }}>
               <div style={{ fontSize:14, fontWeight:600 }}>{r.actividad}</div>
               <div style={{ fontSize:12, color:'var(--text2)', marginTop:2 }}>
-                {r.sala} · {r.fecha_inicio ? format(new Date(r.fecha_inicio),'EEEE d MMM · HH:mm',{locale:es}) : '?'}
-                {r.entrenador ? ` · ${r.entrenador}` : ''}
+                {r.sala} Â· {r.fecha_inicio ? format(new Date(r.fecha_inicio),'EEEE d MMM Â· HH:mm',{locale:es}) : '?'}
+                {r.entrenador ? ` Â· ${r.entrenador}` : ''}
               </div>
             </div>
             <Badge color="green">Confirmada</Badge>
-            <Btn size="sm" variant="danger" onClick={() => { if(window.confirm('¿Cancelar reserva?')) cancelarMutation.mutate(r.id); }}>Cancelar</Btn>
+            <Btn size="sm" variant="danger" onClick={() => { if(window.confirm('Â¿Cancelar reserva?')) cancelarMutation.mutate(r.id); }}>Cancelar</Btn>
           </div>
         ))
       }
@@ -700,5 +698,5 @@ export function MisReservas() {
   );
 }
 
-// ── Tabla y SearchBox re-exportados para uso en Pagos ─────────────
+// â”€â”€ Tabla y SearchBox re-exportados para uso en Pagos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const { Table, SearchBox, Pagination, MetricCard } = require('./../../components/ui/index.jsx');
