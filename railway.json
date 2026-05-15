@@ -1,1 +1,1 @@
-{"$schema":"https://railway.app/railway.schema.json","build":{"builder":"NIXPACKS","buildCommand":"npm install","watchPatterns":["backend/**"]},"deploy":{"startCommand":"node src/server.js","healthcheckPath":"/api/health","restartPolicyType":"ON_FAILURE"}}
+{"$schema":"https://railway.app/railway.schema.json","build":{"builder":"NIXPACKS","buildCommand":"npm install"},"deploy":{"startCommand":"node src/server.js","healthcheckPath":"/api/health","restartPolicyType":"ON_FAILURE"}}
