@@ -698,5 +698,3 @@ export function MisReservas() {
   );
 }
 
-// â”€â”€ Tabla y SearchBox re-exportados para uso en Pagos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const { Table, SearchBox, Pagination, MetricCard } = require('./../../components/ui/index.jsx');
